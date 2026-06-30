@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es"
+      class="light-style layout-menu-fixed"
+      dir="ltr"
+      data-theme="theme-default"
+      data-assets-path="/assets/"
+      data-template="vertical-menu-template-free"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="head(titulo)">
+  <meta charset="utf-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+  <title th:text="${titulo} + ' | Sistema de Productos'">Sistema de Productos</title>
+
+  <link rel="icon" type="image/x-icon" th:href="@{/assets/img/favicon/favicon.ico}" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+        rel="stylesheet" />
+
+  <link rel="stylesheet" th:href="@{/assets/vendor/fonts/boxicons.css}" />
+  <link rel="stylesheet" th:href="@{/assets/vendor/css/core.css}" />
+  <link rel="stylesheet" th:href="@{/assets/vendor/css/theme-default.css}" />
+  <link rel="stylesheet" th:href="@{/assets/css/demo.css}" />
+  <link rel="stylesheet" th:href="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css}" />
+
+  <script th:src="@{/assets/vendor/js/helpers.js}"></script>
+  <script th:src="@{/assets/js/config.js}"></script>
+</head>
+
+<!--/*
+  FRAGMENTO PRINCIPAL: layout completo con sidebar + navbar.
+  Uso en otras vistas:
+      <div th:replace="~{layout/base :: layout(~{::titulo}, ~{::contenido})}">
+  Los templates hijos definen <th:block th:fragment="titulo"> y <th:block th:fragment="contenido">.
+*/-->
+<body th:fragment="layout(titulo, contenido, scripts)">
+
+  <div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+
+      <!-- ========== SIDEBAR / MENU ========== -->
+      <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+
+        <!-- Marca de la app -->
+        <div class="app-brand demo">
+          <a th:href="@{/productos}" class="app-brand-link">
+            <span class="app-brand-logo demo me-2">
+              <i class="bx bx-laptop fs-4" style="color:#696cff;"></i>
+            </span>
+            <span class="app-brand-text demo menu-text fw-bolder ms-1">
+              Sistema de Productos
+            </span>
+          </a>
+          <!-- Botón toggle en pantallas pequeñas -->
+          <a href="javascript:void(0);"
+             class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
+            <i class="bx bx-chevron-left bx-sm align-middle"></i>
+          </a>
+        </div>
+
+        <div class="menu-inner-shadow"></div>
+
+        <!-- Info del usuario en el sidebar -->
+        <div class="p-3 border-bottom" th:if="${session.usuarioSesion != null}">
+          <div class="d-flex align-items-center gap-2">
+            <div class="avatar avatar-sm flex-shrink-0">
+              <span class="avatar-initial rounded-circle bg-label-primary">
+                <i class="bx bx-user"></i>
+              </span>
+            </div>
+            <div class="overflow-hidden">
+              <p class="mb-0 fw-semibold small text-truncate"
+                 th:text="${session.usuarioSesion.nombreCompleto}">Usuario</p>
+              <small class="text-muted"
+                     th:text="${session.usuarioSesion.rol}">ROL</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Items del menu -->
+        <ul class="menu-inner py-1">
+
+          <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Menú</span>
+          </li>
+
+          <!-- Productos -->
+          <li class="menu-item active">
+            <a th:href="@{/productos}" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-box"></i>
+              <div>Productos</div>
+            </a>
+          </li>
+
+          <!-- Categorias (solo Administrador) -->
+          <li class="menu-item" th:if="${session.usuarioSesion?.rol?.name() == 'ADMINISTRADOR'}">
+            <a href="#" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-purchase-tag"></i>
+              <div>Categorías</div>
+            </a>
+          </li>
+
+          <!-- Usuarios (solo Administrador) -->
+          <li class="menu-item" th:if="${session.usuarioSesion?.rol?.name() == 'ADMINISTRADOR'}">
+            <a href="#" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-group"></i>
+              <div>Usuarios</div>
+            </a>
+          </li>
+
+          <!-- Reportes (solo Administrador) -->
+          <li class="menu-item" th:if="${session.usuarioSesion?.rol?.name() == 'ADMINISTRADOR'}">
+            <a href="#" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-bar-chart-alt-2"></i>
+              <div>Reportes</div>
+            </a>
+          </li>
+
+        </ul>
+      </aside>
+      <!-- ========== FIN SIDEBAR ========== -->
+
+      <div class="layout-page">
+
+        <!-- ========== NAVBAR SUPERIOR ========== -->
+        <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
+             id="layout-navbar">
+
+          <!-- Toggle del sidebar en mobile -->
+          <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+            <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+              <i class="bx bx-menu bx-sm"></i>
+            </a>
+          </div>
+
+          <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+
+            <!-- Titulo de la pagina actual -->
+            <div class="navbar-nav align-items-center">
+              <span class="nav-item nav-link fw-semibold text-muted small"
+                    th:replace="${titulo}">Módulo</span>
+            </div>
+
+            <!-- Derecha: usuario + logout -->
+            <ul class="navbar-nav flex-row align-items-center ms-auto">
+
+              <!-- Nombre y rol del usuario logueado -->
+              <li class="nav-item me-2 d-none d-md-block"
+                  th:if="${session.usuarioSesion != null}">
+                <span class="nav-link pe-0">
+                  <span class="fw-semibold"
+                        th:text="${session.usuarioSesion.nombreCompleto}">Usuario</span>
+                  <span class="badge ms-1"
+                        th:classappend="${session.usuarioSesion.rol.name() == 'ADMINISTRADOR'} ? 'bg-label-primary' : 'bg-label-warning'"
+                        th:text="${session.usuarioSesion.rol}">ROL</span>
+                </span>
+              </li>
+
+              <!-- Boton de cerrar sesion -->
+              <li class="nav-item">
+                <a th:href="@{/logout}" class="nav-link btn btn-outline-danger btn-sm px-3">
+                  <i class="bx bx-log-out me-1"></i> Salir
+                </a>
+              </li>
+
+            </ul>
+          </div>
+        </nav>
+        <!-- ========== FIN NAVBAR ========== -->
+
+        <!-- ========== CONTENIDO PRINCIPAL ========== -->
+        <div class="content-wrapper">
+          <div class="container-xxl flex-grow-1 container-p-y">
+            <div th:replace="${contenido}">
+              <!-- El template hijo inyecta su contenido aquí -->
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <footer class="content-footer footer bg-footer-theme">
+            <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+              <div class="mb-2 mb-md-0 text-muted small">
+                Sistema de Administración de Productos &mdash; Examen Extraordinario
+              </div>
+            </div>
+          </footer>
+        </div>
+        <!-- ========== FIN CONTENIDO ========== -->
+
+      </div>
+    </div>
+
+    <!-- Overlay para menu en mobile -->
+    <div class="layout-overlay layout-menu-toggle"></div>
+  </div>
+
+  <!-- JS -->
+  <script th:src="@{/assets/vendor/libs/jquery/jquery.js}"></script>
+  <script th:src="@{/assets/vendor/libs/popper/popper.js}"></script>
+  <script th:src="@{/assets/vendor/js/bootstrap.js}"></script>
+  <script th:src="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js}"></script>
+  <script th:src="@{/assets/vendor/js/menu.js}"></script>
+  <script th:src="@{/assets/js/main.js}"></script>
+
+  <!-- JS adicional inyectado por cada página -->
+  <th:block th:replace="${scripts}"></th:block>
+
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout/base :: head('Listado de Productos')}"></head>
+
+<body th:replace="~{layout/base :: layout(~{::titulo}, ~{::contenido}, ~{::scripts})}">
+
+  <!-- Titulo que aparece en la navbar -->
+  <th:block th:fragment="titulo">
+    <i class="bx bx-box me-1"></i> Listado de Productos
+  </th:block>
+
+  <!-- ===================== CONTENIDO ===================== -->
+  <div th:fragment="contenido">
+
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+
+          <!-- Cabecera de la tarjeta -->
+          <div class="card-header d-flex align-items-center justify-content-between py-3">
+            <div>
+              <h5 class="mb-0">
+                <i class="bx bx-box text-primary me-2"></i>Listado de Productos
+              </h5>
+              <small class="text-muted">Administra los productos registrados en el sistema.</small>
+            </div>
+            <!-- Boton Agregar: solo Administrador -->
+            <a th:if="${session.usuarioSesion?.rol?.name() == 'ADMINISTRADOR'}"
+               th:href="@{/productos/nuevo}"
+               class="btn btn-primary">
+              <i class="bx bx-plus me-1"></i> Agregar Producto
+            </a>
+          </div>
+
+          <div class="card-body">
+
+            <!-- Mensajes flash -->
+            <div th:if="${mensaje}" class="alert alert-success alert-dismissible mb-3" role="alert">
+              <i class="bx bx-check-circle me-1"></i>
+              <span th:text="${mensaje}"></span>
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible mb-3" role="alert">
+              <i class="bx bx-error-circle me-1"></i>
+              <span th:text="${error}"></span>
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Tabla de productos -->
+            <div class="table-responsive">
+              <table class="table table-striped table-hover align-middle">
+                <thead class="table-dark">
+                  <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                    <th>Existencia</th>
+                    <th>Fecha Registro</th>
+                    <th class="text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Sin productos -->
+                  <tr th:if="${#lists.isEmpty(productos)}">
+                    <td colspan="7" class="text-center text-muted py-4">
+                      <i class="bx bx-box bx-lg d-block mb-2"></i>
+                      No hay productos registrados.
+                    </td>
+                  </tr>
+                  <!-- Fila por producto -->
+                  <tr th:each="p : ${productos}">
+                    <td th:text="${p.id}"></td>
+                    <td th:text="${p.nombre}"></td>
+                    <td>
+                      <span class="badge bg-label-info" th:text="${p.categoria}"></span>
+                    </td>
+                    <td th:text="${'$' + #numbers.formatDecimal(p.precio, 1, 'COMMA', 2, 'POINT')}"></td>
+                    <td>
+                      <span class="badge"
+                            th:classappend="${p.existencia > 0 ? 'bg-success' : 'bg-danger'}"
+                            th:text="${p.existencia}"></span>
+                    </td>
+                    <td th:text="${#temporals.format(p.fechaRegistro, 'yyyy-MM-dd')}"></td>
+                    <td class="text-center text-nowrap">
+
+                      <!-- Ver detalle (AJAX + modal) — ambos roles -->
+                      <button type="button"
+                              class="btn btn-info btn-sm btn-ver-detalle me-1"
+                              th:data-id="${p.id}"
+                              title="Ver detalle">
+                        <i class="bx bx-show"></i>
+                      </button>
+
+                      <!-- Editar — solo Administrador -->
+                      <a th:if="${session.usuarioSesion?.rol?.name() == 'ADMINISTRADOR'}"
+                         th:href="@{/productos/editar/{id}(id=${p.id})}"
+                         class="btn btn-warning btn-sm me-1"
+                         title="Editar">
+                        <i class="bx bx-edit"></i>
+                      </a>
+
+                      <!-- Eliminar — solo Administrador -->
+                      <button th:if="${session.usuarioSesion?.rol?.name() == 'ADMINISTRADOR'}"
+                              type="button"
+                              class="btn btn-danger btn-sm btn-eliminar"
+                              th:data-id="${p.id}"
+                              th:data-nombre="${p.nombre}"
+                              title="Eliminar">
+                        <i class="bx bx-trash"></i>
+                      </button>
+
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Leyenda de botones -->
+            <div class="mt-2 small text-muted">
+              <span class="badge bg-info me-1"><i class="bx bx-show"></i></span> Ver detalle
+              <span th:if="${session.usuarioSesion?.rol?.name() == 'ADMINISTRADOR'}">
+                &nbsp;
+                <span class="badge bg-warning me-1"><i class="bx bx-edit"></i></span> Editar
+                &nbsp;
+                <span class="badge bg-danger me-1"><i class="bx bx-trash"></i></span> Eliminar
+              </span>
+            </div>
+
+          </div><!-- /card-body -->
+        </div><!-- /card -->
+      </div>
+    </div>
+
+    <!-- ===================================================
+         MODAL: Detalle del producto (se llena via AJAX)
+         =================================================== -->
+    <div class="modal fade" id="modalDetalle" tabindex="-1" aria-labelledby="modalDetalleTitulo" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-info text-white">
+            <h5 class="modal-title" id="modalDetalleTitulo">
+              <i class="bx bx-info-circle me-1"></i> Detalle del Producto
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <!-- El contenido lo inyecta AJAX -->
+          <div class="modal-body" id="modalDetalleBody">
+            <div class="text-center py-3">
+              <div class="spinner-border text-primary" role="status"></div>
+              <p class="mt-2 mb-0 text-muted">Cargando...</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================
+         MODAL: Confirmar eliminacion
+         =================================================== -->
+    <div class="modal fade" id="modalEliminar" tabindex="-1" aria-labelledby="modalEliminarTitulo" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="modalEliminarTitulo">
+              <i class="bx bx-error-circle me-1"></i> Confirmar Eliminación
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-1">¿Estás seguro de que deseas eliminar el producto
+              <strong id="nombreProductoEliminar"></strong>?
+            </p>
+            <p class="text-muted small mb-0">Esta acción no se puede deshacer.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="bx bx-x me-1"></i> Cancelar
+            </button>
+            <a id="btnConfirmarEliminar" href="#" class="btn btn-danger">
+              <i class="bx bx-trash me-1"></i> Sí, eliminar
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /contenido -->
+
+  <!-- ===================== SCRIPTS DE AJAX ===================== -->
+  <th:block th:fragment="scripts">
+  <script th:inline="none">
+  $(document).ready(function () {
+
+    /* -----------------------------------------------
+       VER DETALLE: peticion AJAX al servidor
+       Endpoint: GET /productos/detalle/{id}
+       Respuesta: JSON con campos del producto
+       ----------------------------------------------- */
+    $('.btn-ver-detalle').on('click', function () {
+
+      var id = $(this).data('id');
+
+      // Mostrar spinner mientras carga
+      $('#modalDetalleBody').html(
+        '<div class="text-center py-4">' +
+          '<div class="spinner-border text-primary" role="status"></div>' +
+          '<p class="mt-2 mb-0 text-muted">Cargando...</p>' +
+        '</div>'
+      );
+
+      // Abrir el modal de inmediato (sin esperar la respuesta)
+      var modalDetalle = new bootstrap.Modal(document.getElementById('modalDetalle'));
+      modalDetalle.show();
+
+      // Peticion AJAX
+      $.ajax({
+        url: '/productos/detalle/' + id,
+        type: 'GET',
+        dataType: 'json',
+        success: function (data) {
+          if (data.error) {
+            $('#modalDetalleBody').html(
+              '<div class="alert alert-danger mb-0"><i class="bx bx-error me-1"></i>' + data.error + '</div>'
+            );
+            return;
+          }
+          // Formatear precio con 2 decimales
+          var precioFormateado = '$' + parseFloat(data.precio)
+            .toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+          var html =
+            '<table class="table table-bordered mb-0">' +
+              '<tbody>' +
+                '<tr><th class="text-nowrap" style="width:40%">ID</th><td>' + data.id + '</td></tr>' +
+                '<tr><th>Nombre</th><td>' + data.nombre + '</td></tr>' +
+                '<tr><th>Descripción</th><td>' + data.descripcion + '</td></tr>' +
+                '<tr><th>Precio</th><td>' + precioFormateado + '</td></tr>' +
+                '<tr><th>Existencia</th><td>' + data.existencia + '</td></tr>' +
+                '<tr><th>Categoría</th><td><span class="badge bg-label-info">' + data.categoria + '</span></td></tr>' +
+                '<tr><th>Fecha Registro</th><td>' + data.fechaRegistro + '</td></tr>' +
+              '</tbody>' +
+            '</table>';
+
+          $('#modalDetalleBody').html(html);
+        },
+        error: function (xhr) {
+          $('#modalDetalleBody').html(
+            '<div class="alert alert-danger mb-0">' +
+              '<i class="bx bx-error-circle me-1"></i>' +
+              'Error al obtener el detalle del producto (HTTP ' + xhr.status + ').' +
+            '</div>'
+          );
+        }
+      });
+    });
+
+    /* -----------------------------------------------
+       ELIMINAR: muestra modal de confirmacion
+       ----------------------------------------------- */
+    $('.btn-eliminar').on('click', function () {
+      var id     = $(this).data('id');
+      var nombre = $(this).data('nombre');
+
+      // Rellenar el modal con los datos del producto
+      $('#nombreProductoEliminar').text(nombre);
+      $('#btnConfirmarEliminar').attr('href', '/productos/eliminar/' + id);
+
+      var modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminar'));
+      modalEliminar.show();
+    });
+
+  });
+  </script>
+  </th:block>
+
+</body>
+</html>

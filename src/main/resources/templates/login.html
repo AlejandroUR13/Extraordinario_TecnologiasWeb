@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es"
+      class="light-style customizer-hide"
+      dir="ltr"
+      data-theme="theme-default"
+      data-assets-path="/assets/"
+      data-template="vertical-menu-template-free"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+  <title>Iniciar Sesión | Sistema de Productos</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" th:href="@{/assets/img/favicon/favicon.ico}" />
+
+  <!-- Fuentes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+        rel="stylesheet" />
+
+  <!-- Iconos Boxicons -->
+  <link rel="stylesheet" th:href="@{/assets/vendor/fonts/boxicons.css}" />
+
+  <!-- CSS base de Sneat -->
+  <link rel="stylesheet" th:href="@{/assets/vendor/css/core.css}" />
+  <link rel="stylesheet" th:href="@{/assets/vendor/css/theme-default.css}" />
+  <link rel="stylesheet" th:href="@{/assets/css/demo.css}" />
+
+  <!-- Perfect Scrollbar -->
+  <link rel="stylesheet" th:href="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css}" />
+
+  <!-- CSS de la pagina de autenticacion -->
+  <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/page-auth.css}" />
+
+  <!-- Helpers y config (deben ir en el head) -->
+  <script th:src="@{/assets/vendor/js/helpers.js}"></script>
+  <script th:src="@{/assets/js/config.js}"></script>
+</head>
+
+<body>
+
+  <div class="container-xxl">
+    <div class="authentication-wrapper authentication-basic container-p-y">
+      <div class="authentication-inner">
+
+        <div class="card">
+          <div class="card-body">
+
+            <!-- Logo / Titulo -->
+            <div class="app-brand justify-content-center mb-4">
+              <span class="app-brand-logo demo me-2">
+                <i class="bx bx-laptop fs-3" style="color:#696cff;"></i>
+              </span>
+              <span class="app-brand-text demo text-body fw-bolder fs-5">
+                Sistema de Productos
+              </span>
+            </div>
+
+            <h4 class="mb-1">Bienvenido 👋</h4>
+            <p class="mb-4 text-muted">Inicia sesión para acceder al sistema</p>
+
+            <!-- Alerta de error (flash attribute del controlador) -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible mb-3" role="alert">
+              <i class="bx bx-error-circle me-1"></i>
+              <span th:text="${error}"></span>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            </div>
+
+            <!-- Formulario de login -->
+            <form th:action="@{/login}" method="POST" class="mb-3">
+
+              <div class="mb-3">
+                <label for="username" class="form-label">Usuario</label>
+                <input type="text"
+                       class="form-control"
+                       id="username"
+                       name="username"
+                       placeholder="Ingresa tu usuario"
+                       autofocus
+                       required />
+              </div>
+
+              <div class="mb-3 form-password-toggle">
+                <label class="form-label" for="password">Contraseña</label>
+                <div class="input-group input-group-merge">
+                  <input type="password"
+                         id="password"
+                         class="form-control"
+                         name="password"
+                         placeholder="············"
+                         required />
+                  <span class="input-group-text cursor-pointer">
+                    <i class="bx bx-hide"></i>
+                  </span>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <button class="btn btn-primary d-grid w-100" type="submit">
+                  <i class="bx bx-log-in me-1"></i> Iniciar Sesión
+                </button>
+              </div>
+
+            </form>
+
+            <!-- Credenciales de acceso (solo para facilitar las pruebas del examen) -->
+            <div class="alert alert-info py-2 small mb-0">
+              <strong>Usuarios de prueba:</strong><br/>
+              <i class="bx bx-user me-1"></i><code>admin</code> / <code>admin123</code> — Administrador<br/>
+              <i class="bx bx-user me-1"></i><code>capturista</code> / <code>captura123</code> — Capturista
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- JS base -->
+  <script th:src="@{/assets/vendor/libs/jquery/jquery.js}"></script>
+  <script th:src="@{/assets/vendor/libs/popper/popper.js}"></script>
+  <script th:src="@{/assets/vendor/js/bootstrap.js}"></script>
+  <script th:src="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js}"></script>
+  <script th:src="@{/assets/vendor/js/menu.js}"></script>
+  <script th:src="@{/assets/js/main.js}"></script>
+
+</body>
+</html>
